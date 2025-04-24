@@ -1,7 +1,7 @@
 
 ## Requirements
 
-*   Python 3.x
+*   Python 3.x (tested : 3.10)
 *   Required Python libraries:
     *   `Flask`
     *   `gpxpy`

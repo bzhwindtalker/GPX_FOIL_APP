@@ -6,13 +6,14 @@
     <title>GPX Segment Analyzer</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Link to your CSS file -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
-        <!-- === FINAL HEADER LAYOUT === -->
+        <!-- Header -->
         <div class="header">
-            <!-- Left Section: File Input, Process Button, Status -->
+            <!-- Left Section -->
             <div class="header-left">
                 <div class="file-section">
                     <label for="file-input" class="file-input-label">Choose GPX File</label>
@@ -22,17 +23,17 @@
                         <div class="checkmark-animation"></div>
                     </div>
                 </div>
-                <!-- MOVED Process Button Here -->
                 <button id="process-button" disabled>
                     <i class="fas fa-cogs button-icon"></i>
                     <span class="button-text">Process GPX</span>
                     <span class="progress-bar"></span>
                 </button>
-                 <!-- MOVED Status Message Area Here -->
-                 <div id="status-message" class="status-message" role="alert"></div>
+                <div id="status-message" class="status-message" role="alert"></div>
+                <button id="toggle-trim-panel-button" class="secondary-button" disabled title="Show/Hide Trim Controls">
+                    <i class="fas fa-edit"></i> Show Trim Panel
+                </button>
             </div>
-
-            <!-- Middle Section: Title, Navigation, Summary -->
+            <!-- Middle Section -->
             <div class="header-middle">
                 <h1>GPX Segment Analyzer</h1>
                 <div class="nav-buttons">
@@ -40,60 +41,112 @@
                     <button id="all-segments-button" disabled title="Show map with all filtered segments"><i class="fas fa-map-marked-alt"></i> All Segments</button>
                     <button id="next-button" disabled title="Show next segment map">Next <i class="fas fa-chevron-right"></i></button>
                 </div>
-                 <!-- MOVED Summary Here -->
-                 <div id="results">
-                    <h2>Summary</h2>
-                    <p>Total Distance: <span id="total-distance">0 m</span></p>
-                    <p>Total Duration: <span id="total-duration">0:00:00</span></p>
-                    <p>Filtered Segments: <span id="total-segments">0</span></p>
-                </div>
             </div>
-
-            <!-- Right Section: Thresholds Only -->
+            <!-- Right Section -->
             <div class="header-right">
-                 <!-- Threshold Controls -->
-                 <div class="threshold-controls">
+                <div class="threshold-controls">
                     <p class="threshold-title">Segment Filtering Thresholds:</p>
                     <div class="threshold-section">
                         <label for="speed-min-input" title="Points slower than this are excluded from segments (unless merging gaps)">Min Point Speed (km/h):</label>
                         <input type="number" id="speed-min-input" value="5" min="0" step="0.5">
                     </div>
-                     <div class="threshold-section">
+                    <div class="threshold-section">
                         <label for="speed-max-input" title="Points faster than this are excluded from segments (unless merging gaps)">Max Point Speed (km/h):</label>
                         <input type="number" id="speed-max-input" value="25" min="0" step="0.5">
                     </div>
-                     <div class="threshold-section">
+                    <div class="threshold-section">
                         <label for="avg-speed-min-input" title="Entire segments with an average speed below this value will be removed">Min Avg Segment Speed (km/h):</label>
                         <input type="number" id="avg-speed-min-input" value="9" min="0" step="0.5">
                     </div>
                 </div>
-                 <!-- Process button & Status message were moved -->
+            </div>
+        </div> <!-- End Header -->
+
+        <!-- Summary Section Container -->
+        <div id="summary-section-container" class="summary-section-container" style="visibility: hidden;">
+            <div id="summary-details" class="summary-box">
+                <h2>Summary <span style="font-weight:normal; font-size: 13px;">(Incl. Segments)</span></h2>
+                <p>Total Distance: <span id="total-distance">0 m</span></p>
+                <p>Total Duration: <span id="total-duration">0:00:00</span></p>
+                <p>Included Segments: <span id="included-segments-count">0</span> / <span id="total-segments">0</span></p>
+            </div>
+            <div id="best-segment-details" class="summary-box">
+                <h2 class="best-segment-title">Best Included Segment <span style="font-weight:normal; font-size: 13px;">(Longest Duration)</span></h2>
+                <p>Segment #: <span id="best-segment-index">N/A</span></p>
+                <p>Distance: <span id="best-segment-distance">N/A</span></p>
+                <p>Duration: <span id="best-segment-duration">N/A</span></p>
+                <p>Avg Speed: <span id="best-segment-avg-speed">N/A</span></p>
             </div>
         </div>
-        <!-- === END OF FINAL HEADER LAYOUT === -->
 
+        <!-- Trim Controls Section -->
+        <div id="trim-controls" class="control-panel">
+            <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 16px;">Trim/Reset Selected Segment (<span id="trim-segment-number"></span>)</h3>
+            <p style="font-size: 13px; color: #555; margin-bottom: 10px;">
+                Adjust start/end indices (0-based) for live map preview. Max index: <span id="trim-max-index">?</span>
+            </p>
+            <div class="trim-inputs" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;">
+                <div>
+                    <label for="trim-start-index" style="font-size: 13px; margin-right: 5px;">Start Index:</label>
+                    <!-- Live preview trigger -->
+                    <input type="number" id="trim-start-index" min="0" step="1" style="padding: 5px; width: 70px; font-size: 13px;" oninput="triggerMapHighlightPreview()">
+                </div>
+                <div>
+                    <label for="trim-end-index" style="font-size: 13px; margin-right: 5px;">End Index:</label>
+                    <!-- Live preview trigger -->
+                    <input type="number" id="trim-end-index" min="0" step="1" style="padding: 5px; width: 70px; font-size: 13px;" oninput="triggerMapHighlightPreview()">
+                </div>
+                 <button id="reset-segment-button" style="padding: 6px 12px; font-size: 13px;" title="Reset segment to its original state before trimming">
+                     <i class="fas fa-undo"></i> Reset Segment
+                 </button>
+                 <button id="accept-trim-button" style="padding: 6px 12px; font-size: 13px;" title="Apply trim and update segment stats in table">
+                     <i class="fas fa-check"></i> Accept Trim & Update Table
+                 </button>
+            </div>
+            <div id="trim-status-message" class="status-message" style="margin-top: 10px;"></div>
+        </div>
+
+        <!-- Segment Details Table -->
         <div id="segment-data" style="display: none;">
-             <h2>Filtered Segment Details</h2>
-            <table id="segment-table">
+             <h2>Filtered Segment Details <span style="font-weight:normal; font-size: 13px;">(Check to exclude from totals)</span></h2>
+             <table id="segment-table">
                 <thead>
                     <tr>
+                        <th class="exclude-col" title="Exclude from total stats"><i class="fas fa-ban"></i></th>
                         <th>Segment</th>
                         <th>Distance (m)</th>
                         <th>Duration</th>
                         <th>Avg Speed (km/h)</th>
+                        <th>Points</th>
+                        <th class="export-col" title="Export Segment">Export</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
-            </table>
+             </table>
         </div>
 
+        <!-- Map Container -->
         <div id="map">
             <div class="map-placeholder">Select a GPX file and set thresholds, then click Process.</div>
         </div>
-    </div>
+
+        <!-- START: Added Footer -->
+        <footer>
+            <p>
+                <a href="https://github.com/bzhwindtalker/GPX_FOIL_APP" target="_blank" rel="noopener noreferrer">GPX_FOIL_APP on GitHub</a>
+            </p>
+            <p>
+                Licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener noreferrer">CC BY-NC 4.0</a> (Non-Commercial)
+            </p>
+            <p>
+                Design by ADAM MERCIER 2024-2025
+            </p>
+        </footer>
+        <!-- END: Added Footer -->
+
+    </div> <!-- End Container -->
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
-    <!-- JavaScript remains the same -->
     <script>
         // --- DOM Element References ---
         const fileInput = document.getElementById('file-input');
@@ -101,9 +154,6 @@
         const speedMinInput = document.getElementById('speed-min-input');
         const speedMaxInput = document.getElementById('speed-max-input');
         const avgSpeedMinInput = document.getElementById('avg-speed-min-input');
-        const totalDistance = document.getElementById('total-distance');
-        const totalDuration = document.getElementById('total-duration');
-        const totalSegments = document.getElementById('total-segments');
         const mapDiv = document.getElementById('map');
         const segmentTableBody = document.querySelector('#segment-table tbody');
         const segmentDataContainer = document.getElementById('segment-data');
@@ -113,13 +163,53 @@
         const selectedFilenameSpan = document.getElementById('selected-filename');
         const fileSectionDiv = document.querySelector('.file-section');
         const statusMessageDiv = document.getElementById('status-message');
-        const resultsDiv = document.getElementById('results'); // Added reference
+        const summarySectionContainer = document.getElementById('summary-section-container');
+        const summaryDetailsDiv = document.getElementById('summary-details'); // Might not need if only updating spans
+        const bestSegmentDetailsDiv = document.getElementById('best-segment-details');
+        const totalDistanceSpan = document.getElementById('total-distance');
+        const totalDurationSpan = document.getElementById('total-duration');
+        const includedSegmentsCountSpan = document.getElementById('included-segments-count');
+        const totalSegmentsSpan = document.getElementById('total-segments');
+        const bestSegmentIndexSpan = document.getElementById('best-segment-index');
+        const bestSegmentDistanceSpan = document.getElementById('best-segment-distance');
+        const bestSegmentDurationSpan = document.getElementById('best-segment-duration');
+        const bestSegmentAvgSpeedSpan = document.getElementById('best-segment-avg-speed');
+        const trimControlsDiv = document.getElementById('trim-controls');
+        const trimSegmentNumberSpan = document.getElementById('trim-segment-number');
+        const trimMaxIndexSpan = document.getElementById('trim-max-index');
+        const trimStartIndexInput = document.getElementById('trim-start-index');
+        const trimEndIndexInput = document.getElementById('trim-end-index');
+        const resetSegmentButton = document.getElementById('reset-segment-button');
+        const acceptTrimButton = document.getElementById('accept-trim-button');
+        const trimStatusMessageDiv = document.getElementById('trim-status-message');
+        const toggleTrimPanelButton = document.getElementById('toggle-trim-panel-button');
 
         // --- State Variables ---
         let segmentMaps = [];
-        let segmentDetails = [];
+        let segmentDetails = []; // Holds current state details (can be reset/trimmed)
         let currentSegmentIndex = -1;
-        let globalData = null;
+        let globalData = null; // Holds original full data from server on last process
+        let excludedSegmentIndices = new Set();
+        let mapHighlightDebounceTimer;
+        let isTrimPanelVisible = false;
+
+        // --- Helper Functions ---
+        function formatDurationFromSeconds(totalSeconds) {
+            if (isNaN(totalSeconds) || totalSeconds < 0) return "0:00:00";
+            const seconds = Math.floor(totalSeconds % 60);
+            const minutes = Math.floor((totalSeconds / 60) % 60);
+            const hours = Math.floor(totalSeconds / 3600);
+            return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+        function parseDurationToSeconds(durationStr) {
+            if (!durationStr || typeof durationStr !== 'string') return 0;
+            const parts = durationStr.split(':').map(Number);
+            let totalSeconds = 0;
+            if (parts.length === 3) totalSeconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
+            else if (parts.length === 2) totalSeconds = parts[0] * 60 + parts[1];
+            else if (parts.length === 1) totalSeconds = parts[0];
+            return isNaN(totalSeconds) ? 0 : totalSeconds;
+        }
 
         // --- Event Listeners ---
         fileInput.addEventListener('change', handleFileSelect);
@@ -127,16 +217,51 @@
         prevButton.addEventListener('click', () => navigate(-1));
         nextButton.addEventListener('click', () => navigate(1));
         allSegmentsButton.addEventListener('click', showAllSegments);
+        resetSegmentButton.addEventListener('click', handleResetSegmentClick);
+        acceptTrimButton.addEventListener('click', handleAcceptTrimClick);
+        toggleTrimPanelButton.addEventListener('click', handleToggleTrimPanel);
+        // Live preview listeners are inline via oninput="..."
 
-        // --- Functions ---
+        // --- Trim Panel Toggle Logic ---
+        function handleToggleTrimPanel() {
+            isTrimPanelVisible = !isTrimPanelVisible;
+            updateTrimPanelVisibility();
+        }
+        function updateTrimPanelVisibility() {
+            const canShow = currentSegmentIndex !== -1 && segmentDetails.length > 0;
+            if (canShow && isTrimPanelVisible) {
+                trimControlsDiv.classList.add('visible');
+                toggleTrimPanelButton.innerHTML = '<i class="fas fa-edit"></i> Hide Trim Panel';
+                toggleTrimPanelButton.title = "Hide Trim Controls";
+            } else {
+                trimControlsDiv.classList.remove('visible');
+                toggleTrimPanelButton.innerHTML = '<i class="fas fa-edit"></i> Show Trim Panel';
+                toggleTrimPanelButton.title = "Show Trim Controls";
+                if (!isTrimPanelVisible) {
+                    resetMapHighlight(); // Reset preview if hiding panel
+                    clearTrimStatusMessage();
+                }
+            }
+             toggleTrimPanelButton.disabled = !(currentSegmentIndex !== -1 && segmentDetails.length > 0);
+             if (toggleTrimPanelButton.disabled) {
+                 isTrimPanelVisible = false;
+                 trimControlsDiv.classList.remove('visible');
+                 toggleTrimPanelButton.innerHTML = '<i class="fas fa-edit"></i> Show Trim Panel';
+                 toggleTrimPanelButton.title = "Show Trim Controls (Select Segment First)";
+             }
+        }
+
+        // --- Core Functions ---
         function handleFileSelect() {
             clearStatusMessage();
+            clearTrimStatusMessage();
             if (fileInput.files.length > 0) {
                 const fileName = fileInput.files[0].name;
                 selectedFilenameSpan.textContent = fileName;
                 processButton.disabled = false;
                 fileSectionDiv.classList.add('file-selected');
                 setTimeout(() => fileSectionDiv.classList.remove('file-selected'), 1500);
+                resetUIBeforeProcessing();
             } else {
                 selectedFilenameSpan.textContent = 'No file selected';
                 processButton.disabled = true;
@@ -144,147 +269,116 @@
         }
 
         async function handleProcessClick() {
-            const file = fileInput.files[0];
-            if (!file) { showStatusMessage('Please select a GPX file first.', 'error'); return; }
-
-            const speedMin = speedMinInput.value;
-            const speedMax = speedMaxInput.value;
-            const avgSpeedMin = avgSpeedMinInput.value;
-
+            const file = fileInput.files[0]; if (!file) { showStatusMessage('Please select a GPX file first.', 'error'); return; }
+            const speedMin = speedMinInput.value; const speedMax = speedMaxInput.value; const avgSpeedMin = avgSpeedMinInput.value;
             if (speedMin === '' || speedMax === '' || avgSpeedMin === '') { showStatusMessage('Please enter values for all speed thresholds.', 'error'); return; }
             if (parseFloat(speedMin) < 0 || parseFloat(speedMax) < 0 || parseFloat(avgSpeedMin) < 0) { showStatusMessage('Speed thresholds cannot be negative.', 'error'); return; }
             if (parseFloat(speedMin) >= parseFloat(speedMax)) { showStatusMessage('Minimum point speed must be less than maximum point speed.', 'error'); return; }
 
-            processButton.disabled = true;
-            processButton.classList.add('processing');
-            showStatusMessage('Processing GPX file...', 'info');
+            processButton.disabled = true; processButton.classList.add('processing');
             resetUIBeforeProcessing();
+            showStatusMessage('Processing GPX file...', 'info');
+            mapDiv.innerHTML = '<div class="map-placeholder">Parsing file and loading raw track...</div>';
 
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('speed_min', speedMin);
-            formData.append('speed_max', speedMax);
-            formData.append('avg_speed_min', avgSpeedMin);
+            const formData = new FormData(); formData.append('file', file); formData.append('speed_min', speedMin); formData.append('speed_max', speedMax); formData.append('avg_speed_min', avgSpeedMin);
 
             try {
                 const response = await fetch('/upload', { method: 'POST', body: formData });
                 const resultData = await response.json();
 
-                if (response.ok) {
-                    clearStatusMessage();
-                    globalData = resultData;
-                    updateUIAfterProcessing(globalData); // This will now make results visible
-                    if (globalData.total_segments > 0 && globalData.all_segments_html) {
-                        loadMap(globalData.all_segments_html);
-                        enableNavButtons(true);
-                        showStatusMessage(`Processing complete. Found ${globalData.total_segments} segments matching criteria.`, 'success');
-                    } else {
-                         mapDiv.innerHTML = '<div class="map-placeholder">No segments found matching the specified criteria. Try adjusting thresholds.</div>';
-                         enableNavButtons(false);
-                         // Show appropriate message even if no segments found
-                         if(globalData.total_segments === 0){
-                              showStatusMessage('Processing complete. No matching segments found.', 'warning');
-                         } else {
-                              showStatusMessage('Processing complete.', 'success'); // Generic success if data ok but maybe no map html
-                         }
-                    }
-                    currentSegmentIndex = -1;
-                    updateTableHighlight();
+                clearStatusMessage();
+                globalData = resultData;
+                segmentMaps = globalData.segment_html_files || [];
+                segmentDetails = globalData.segment_details || [];
+
+                // 1. Load Raw Track Map
+                if (globalData.raw_track_map_filename) {
+                    loadMap(globalData.raw_track_map_filename);
+                    showStatusMessage('Raw track loaded. Checking segments...', 'info');
                 } else {
-                    console.error("Server Error:", resultData.error);
-                    showStatusMessage(`Error: ${resultData.error || 'Unknown server error'}`, 'error');
-                    mapDiv.innerHTML = `<div class="map-placeholder error">Error processing file.</div>`;
-                    enableNavButtons(false);
-                    resultsDiv.style.visibility = 'hidden'; // Hide summary on error
+                    mapDiv.innerHTML = '<div class="map-placeholder error">Could not load raw track map. Checking segments...</div>';
+                    showStatusMessage('Could not load raw track map. Checking segments...', 'warning');
+                }
+
+                // 2. Check for Processing Errors
+                if (globalData.error) {
+                    showStatusMessage(`Processing Error: ${globalData.error}`, 'error');
+                    enableNavButtons(false); toggleTrimPanelButton.disabled = true; updateTrimPanelVisibility(); segmentDataContainer.style.display = 'none'; summarySectionContainer.style.visibility = 'hidden';
+                } else {
+                    // 3. Process Successful Results
+                    updateUIAfterProcessing(globalData);
+                    if (globalData.total_segments > 0) {
+                        populateSegmentTable(); recalculateAndDisplayTotals(); enableNavButtons(true); toggleTrimPanelButton.disabled = true;
+
+                        // 4. Load Final Overview Map
+                        if (globalData.all_segments_html) {
+                             setTimeout(() => { loadMap(globalData.all_segments_html); showStatusMessage(`Processing complete. Found ${globalData.total_segments} segments.`, 'success'); currentSegmentIndex = -1; updateTableHighlight(); }, 150);
+                        } else { showStatusMessage(`Processing complete. Found ${globalData.total_segments} segments (no overview map).`, 'success'); currentSegmentIndex = -1; updateTableHighlight(); }
+                    } else { // No segments found
+                        mapDiv.innerHTML = '<div class="map-placeholder">No segments found matching the specified criteria.</div>'; enableNavButtons(false); toggleTrimPanelButton.disabled = true; updateTrimPanelVisibility(); showStatusMessage('Processing complete. No matching segments found.', 'warning');
+                    }
                 }
             } catch (error) {
-                console.error("Fetch Error:", error);
-                showStatusMessage('Error connecting to the server. Please check your connection.', 'error');
-                mapDiv.innerHTML = '<div class="map-placeholder error">Could not connect to the server.</div>';
-                enableNavButtons(false);
-                resultsDiv.style.visibility = 'hidden'; // Hide summary on error
+                console.error("Fetch/JSON Error:", error); showStatusMessage('Error communicating with server or parsing response.', 'error'); mapDiv.innerHTML = '<div class="map-placeholder error">Could not retrieve processing results.</div>'; resetUIBeforeProcessing();
             } finally {
-                processButton.disabled = false;
-                processButton.classList.remove('processing');
+                processButton.disabled = false; processButton.classList.remove('processing');
             }
         }
 
         function resetUIBeforeProcessing() {
-            // Reset displayed values
-            totalDistance.textContent = '0 m';
-            totalDuration.textContent = '0:00:00';
-            totalSegments.textContent = '0';
-            // Hide summary until processing is done
-            resultsDiv.style.visibility = 'hidden';
-            // Clear table and hide container
-            segmentTableBody.innerHTML = '';
-            segmentDataContainer.style.display = 'none';
-            // Reset map placeholder
-            mapDiv.innerHTML = '<div class="map-placeholder">Processing... Please wait.</div>';
-            // Reset state variables
-            globalData = null;
-            segmentMaps = [];
-            segmentDetails = [];
-            currentSegmentIndex = -1;
-            // Disable buttons and clear status
-            enableNavButtons(false);
-            clearStatusMessage();
+            totalDistanceSpan.textContent = '0 m'; totalDurationSpan.textContent = '0:00:00'; includedSegmentsCountSpan.textContent = '0'; totalSegmentsSpan.textContent = '0';
+            bestSegmentIndexSpan.textContent = 'N/A'; bestSegmentDistanceSpan.textContent = 'N/A'; bestSegmentDurationSpan.textContent = 'N/A'; bestSegmentAvgSpeedSpan.textContent = 'N/A';
+            summarySectionContainer.style.visibility = 'hidden'; bestSegmentDetailsDiv.style.display = 'none';
+            segmentTableBody.innerHTML = ''; segmentDataContainer.style.display = 'none';
+            mapDiv.innerHTML = '<div class="map-placeholder">Select a GPX file...</div>';
+            isTrimPanelVisible = false; updateTrimPanelVisibility(); toggleTrimPanelButton.disabled = true; clearTrimStatusMessage();
+            globalData = null; segmentMaps = []; segmentDetails = []; currentSegmentIndex = -1; excludedSegmentIndices.clear();
+            enableNavButtons(false); clearStatusMessage();
         }
 
-         function updateUIAfterProcessing(data) {
-            if (!data) {
-                 resultsDiv.style.visibility = 'hidden'; // Ensure hidden if no data
-                 return;
-            }
-            // Update summary text content
-            totalDistance.textContent = `${data.total_distance.toFixed(2)} m`;
-            totalDuration.textContent = data.total_duration || '0:00:00';
-            totalSegments.textContent = data.total_segments || 0;
-            // Make summary visible
-            resultsDiv.style.visibility = 'visible';
-
-            // Update state for maps and details
-            segmentMaps = data.segment_html_files || [];
-            segmentDetails = data.segment_details || [];
-
-            // Populate table and show if segments exist
-            if (data.total_segments > 0) {
-                segmentDataContainer.style.display = 'block';
-                populateSegmentTable();
-            } else {
-                segmentDataContainer.style.display = 'none';
-            }
+        function updateUIAfterProcessing(data) {
+            if (!data) { summarySectionContainer.style.visibility = 'hidden'; toggleTrimPanelButton.disabled = true; updateTrimPanelVisibility(); segmentDataContainer.style.display = 'none'; return; }
+            totalSegmentsSpan.textContent = data.total_segments || 0;
+            summarySectionContainer.style.visibility = 'visible';
+            if (data.total_segments > 0) { segmentDataContainer.style.display = 'block'; bestSegmentDetailsDiv.style.display = 'none'; }
+            else { segmentDataContainer.style.display = 'none'; toggleTrimPanelButton.disabled = true; updateTrimPanelVisibility(); bestSegmentDetailsDiv.style.display = 'none'; }
         }
 
-        function enableNavButtons(enable) {
-             prevButton.disabled = !enable;
-             nextButton.disabled = !enable;
-             allSegmentsButton.disabled = !enable;
-        }
+        function enableNavButtons(enable) { const hasSegments = globalData && globalData.total_segments > 0; prevButton.disabled = !hasSegments; nextButton.disabled = !hasSegments; allSegmentsButton.disabled = !hasSegments; }
 
         function populateSegmentTable() {
-            const overallAvgSpeed = calculateAverageSpeed(globalData.total_distance, globalData.total_duration);
-            const allSegmentsRowHtml = globalData.total_segments > 0 ? `
-                <tr id="all-segments-row" class="clickable-row summary-row" onclick="showAllSegments()" title="Click to view all segments on map">
-                    <td>All Filtered</td> <td>${globalData.total_distance.toFixed(2)}</td> <td>${globalData.total_duration}</td> <td>${overallAvgSpeed.toFixed(2)}</td>
-                </tr>` : '';
+              if (!globalData || !segmentDetails) return;
+            const allSegmentsRowHtml = globalData.total_segments > 0 ? `<tr id="all-segments-row" class="clickable-row summary-row" onclick="showAllSegments()" title="Click to view all segments on map"> <td class="exclude-col"></td> <td>All Included</td> <td id="all-segments-dist-cell">N/A</td> <td id="all-segments-dur-cell">N/A</td> <td id="all-segments-speed-cell">N/A</td> <td>N/A</td> <td class="export-col"></td> </tr>` : '';
             segmentTableBody.innerHTML = `
                 ${allSegmentsRowHtml}
                 ${segmentDetails.map((detail, index) => `
-                    <tr id="segment-row-${index}" class="clickable-row" onclick="showSpecificSegment(${index})" title="Click to view Segment ${index + 1} on map">
-                        <td>Segment ${index + 1}</td> <td>${detail.distance.toFixed(2)}</td> <td>${detail.duration}</td> <td>${detail.average_speed.toFixed(2)}</td>
+                    <tr id="segment-row-${index}" class="clickable-row">
+                        <td class="exclude-col"> <input type="checkbox" id="exclude-cb-${index}" data-index="${index}" onchange="handleExclusionToggle(${index}, this.checked)" title="Exclude Segment ${index + 1} from totals"> </td>
+                        <td onclick="showSpecificSegment(${index})" title="Click to view Segment ${index + 1} on map">Segment ${index + 1}</td>
+                        <td class="data-dist" onclick="showSpecificSegment(${index})">${detail.distance.toFixed(2)}</td>
+                        <td class="data-dur" onclick="showSpecificSegment(${index})">${detail.duration}</td>
+                        <td class="data-speed" onclick="showSpecificSegment(${index})">${detail.average_speed.toFixed(2)}</td>
+                        <td class="data-points" onclick="showSpecificSegment(${index})">${detail.point_count}</td>
+                        <td class="export-col"> <button class="export-button" onclick="event.stopPropagation(); window.location.href='/export/${detail.original_index ?? index}'" title="Export Segment ${index+1} as GPX"> <i class="fas fa-download"></i> </button> </td>
                     </tr>`).join('')}`;
-            updateTableHighlight();
         }
 
-        function calculateAverageSpeed(distance, durationStr) {
-            if (!durationStr || distance <= 0) return 0;
-            const parts = durationStr.split(':').map(Number);
-            let totalSeconds = 0;
-            if (parts.length === 3) totalSeconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
-            else if (parts.length === 2) totalSeconds = parts[0] * 60 + parts[1];
-            else if (parts.length === 1) totalSeconds = parts[0];
-            return totalSeconds > 0 ? (distance / totalSeconds) * 3.6 : 0;
+        function handleExclusionToggle(index, isChecked) {
+             const row = document.getElementById(`segment-row-${index}`);
+             if (isChecked) { excludedSegmentIndices.add(index); row?.classList.add('excluded-row'); }
+             else { excludedSegmentIndices.delete(index); row?.classList.remove('excluded-row'); }
+             recalculateAndDisplayTotals(); updateTableHighlight();
+        }
+
+        function recalculateAndDisplayTotals() {
+            if (!globalData || !segmentDetails) return;
+            let currentTotalDist = 0; let currentTotalDurationSec = 0; let currentIncludedCount = 0; let currentBestDurationSec = -1; let currentBestSegmentIndex = -1;
+            segmentDetails.forEach((detail, index) => { if (!excludedSegmentIndices.has(index)) { currentIncludedCount++; currentTotalDist += detail.distance; const durationSec = detail.duration_seconds ?? parseDurationToSeconds(detail.duration); currentTotalDurationSec += durationSec; if (durationSec > currentBestDurationSec) { currentBestDurationSec = durationSec; currentBestSegmentIndex = index; } } });
+            totalDistanceSpan.textContent = `${currentTotalDist.toFixed(2)} m`; totalDurationSpan.textContent = formatDurationFromSeconds(currentTotalDurationSec); includedSegmentsCountSpan.textContent = currentIncludedCount;
+            document.querySelectorAll('.best-segment-row').forEach(row => row.classList.remove('best-segment-row'));
+            if (currentBestSegmentIndex !== -1) { const bestDetail = segmentDetails[currentBestSegmentIndex]; bestSegmentIndexSpan.textContent = currentBestSegmentIndex + 1; bestSegmentDistanceSpan.textContent = `${bestDetail.distance.toFixed(2)} m`; bestSegmentDurationSpan.textContent = bestDetail.duration; bestSegmentAvgSpeedSpan.textContent = `${bestDetail.average_speed.toFixed(2)} km/h`; bestSegmentDetailsDiv.style.display = 'block'; document.getElementById(`segment-row-${currentBestSegmentIndex}`)?.classList.add('best-segment-row'); }
+            else { bestSegmentDetailsDiv.style.display = 'none'; }
+            const allDistCell = document.getElementById('all-segments-dist-cell'); const allDurCell = document.getElementById('all-segments-dur-cell'); const allSpeedCell = document.getElementById('all-segments-speed-cell'); if (allDistCell && allDurCell && allSpeedCell) { if(currentIncludedCount > 0) { allDistCell.textContent = currentTotalDist.toFixed(2); allDurCell.textContent = formatDurationFromSeconds(currentTotalDurationSec); const avgSpeed = currentTotalDurationSec > 0 ? (currentTotalDist / currentTotalDurationSec * 3.6) : 0; allSpeedCell.textContent = avgSpeed.toFixed(2); } else { allDistCell.textContent = '0.00'; allDurCell.textContent = '0:00:00'; allSpeedCell.textContent = '0.00'; } }
         }
 
         function navigate(direction) {
@@ -292,16 +386,18 @@
             let newIndex = currentSegmentIndex + direction;
             if (newIndex < -1) newIndex = segmentMaps.length - 1;
             else if (newIndex >= segmentMaps.length) newIndex = -1;
-            currentSegmentIndex = newIndex;
-            currentSegmentIndex === -1 ? showAllSegments() : showSpecificSegment(currentSegmentIndex);
+            if (newIndex === -1) { showAllSegments(); }
+            else { showSpecificSegment(newIndex); }
         }
 
         function showAllSegments() {
-            if (!globalData || !globalData.all_segments_html) return;
-            currentSegmentIndex = -1;
-            loadMap(globalData.all_segments_html);
-            updateTableHighlight();
-            scrollToHighlightedRow();
+            if (!globalData || !globalData.all_segments_html) { console.warn("All segments map file not available."); currentSegmentIndex = -1; updateTableHighlight(); isTrimPanelVisible = false; updateTrimPanelVisibility(); return; }
+             currentSegmentIndex = -1;
+             loadMap(globalData.all_segments_html);
+             updateTableHighlight();
+             scrollToHighlightedRow();
+             isTrimPanelVisible = false;
+             updateTrimPanelVisibility();
         }
 
         function showSpecificSegment(index) {
@@ -310,44 +406,105 @@
              loadMap(segmentMaps[currentSegmentIndex]);
              updateTableHighlight();
              scrollToHighlightedRow();
+             const segmentInfo = segmentDetails[currentSegmentIndex];
+             if (segmentInfo) {
+                 trimSegmentNumberSpan.textContent = `Segment ${index + 1}`;
+                 const maxIndex = segmentInfo.point_count - 1;
+                 trimMaxIndexSpan.textContent = maxIndex;
+                 trimStartIndexInput.value = 0; trimEndIndexInput.value = maxIndex;
+                 trimStartIndexInput.max = maxIndex; trimEndIndexInput.max = maxIndex;
+                 clearTrimStatusMessage();
+                 updateTrimPanelVisibility();
+                 resetMapHighlight(); // Reset highlight when loading segment
+             } else {
+                 isTrimPanelVisible = false;
+                 updateTrimPanelVisibility();
+             }
         }
 
+        // --- Live Map Highlight Preview ---
+        function triggerMapHighlightPreview() {
+            clearTimeout(mapHighlightDebounceTimer);
+            mapHighlightDebounceTimer = setTimeout(() => {
+                if (currentSegmentIndex === -1 || !isTrimPanelVisible) { resetMapHighlight(); return; }
+                const startIndex = parseInt(trimStartIndexInput.value, 10); const endIndex = parseInt(trimEndIndexInput.value, 10); const maxIndex = parseInt(trimMaxIndexSpan.textContent, 10);
+                if (isNaN(startIndex) || isNaN(endIndex) || startIndex < 0 || endIndex < 0 || startIndex > maxIndex || endIndex > maxIndex || startIndex > endIndex) { resetMapHighlight(); return; }
+                try { const iframe = document.getElementById('map-iframe'); if (iframe && iframe.contentWindow && typeof iframe.contentWindow.highlightTrimRange === 'function') { iframe.contentWindow.highlightTrimRange(startIndex, endIndex); } else { console.warn("Map highlight function not available."); } }
+                catch (e) { console.error("Error calling map highlight function:", e); }
+            }, 300);
+        }
+
+        // --- Reset Map Highlight ---
+        function resetMapHighlight() {
+              try { const iframe = document.getElementById('map-iframe'); if (iframe && iframe.contentWindow && typeof iframe.contentWindow.resetHighlight === 'function') { iframe.contentWindow.resetHighlight(); } }
+              catch (e) { console.error("Error calling map reset highlight function:", e); }
+        }
+
+        // --- Handle Reset Segment ---
+        async function handleResetSegmentClick() {
+            clearTrimStatusMessage(); if (currentSegmentIndex === -1) { showTrimStatusMessage('Please select a specific segment first.', 'warning'); return; }
+            const originalIndex = segmentDetails[currentSegmentIndex]?.original_index ?? currentSegmentIndex;
+            resetSegmentButton.disabled = true; acceptTrimButton.disabled = true; showTrimStatusMessage(`Resetting Segment ${currentSegmentIndex + 1}...`, 'info');
+            try {
+                const response = await fetch(`/reset_segment/${originalIndex}`, { method: 'POST' }); const result = await response.json();
+                if (response.ok) {
+                    const resetStats = result.reset_stats; const updatedOriginalIndex = result.original_segment_index; const frontendIndex = segmentDetails.findIndex(d => d.original_index === updatedOriginalIndex);
+                    if (frontendIndex === -1) { throw new Error("Could not match reset segment index."); }
+                    segmentDetails[frontendIndex] = { ...segmentDetails[frontendIndex], ...resetStats };
+                    const row = document.getElementById(`segment-row-${frontendIndex}`); if (row) { row.querySelector('.data-dist').textContent = resetStats.distance.toFixed(2); row.querySelector('.data-dur').textContent = resetStats.duration; row.querySelector('.data-speed').textContent = resetStats.average_speed.toFixed(2); row.querySelector('.data-points').textContent = resetStats.point_count; }
+                    const newMaxIndex = resetStats.point_count - 1; trimMaxIndexSpan.textContent = newMaxIndex; trimStartIndexInput.value = 0; trimEndIndexInput.value = newMaxIndex; trimStartIndexInput.max = newMaxIndex; trimEndIndexInput.max = newMaxIndex;
+                    recalculateAndDisplayTotals();
+                    if (currentSegmentIndex === frontendIndex && segmentMaps[frontendIndex]) { loadMap(segmentMaps[frontendIndex]); }
+                    showTrimStatusMessage(`Segment ${frontendIndex + 1} reset successfully.`, 'success');
+                    resetMapHighlight();
+                } else { console.error("Reset Segment Error:", result.error); showTrimStatusMessage(`Error: ${result.error || 'Unknown reset error'}`, 'error'); }
+            } catch (error) { console.error("Reset Segment Fetch Error:", error); showTrimStatusMessage('Error communicating with server for reset.', 'error'); }
+            finally { resetSegmentButton.disabled = false; acceptTrimButton.disabled = false; }
+        }
+
+        // --- Handle Accept Trim ---
+        async function handleAcceptTrimClick() {
+            clearTrimStatusMessage(); if (currentSegmentIndex === -1) { showTrimStatusMessage('Please select a specific segment first.', 'warning'); return; }
+            const startIndex = parseInt(trimStartIndexInput.value, 10); const endIndex = parseInt(trimEndIndexInput.value, 10); const maxIndex = parseInt(trimMaxIndexSpan.textContent, 10);
+            if (isNaN(startIndex) || isNaN(endIndex)) { showTrimStatusMessage('Start and End indices must be numbers.', 'error'); return; } if (startIndex < 0 || endIndex < 0 || startIndex > maxIndex || endIndex > maxIndex) { showTrimStatusMessage(`Indices must be between 0 and ${maxIndex}.`, 'error'); return; } if (startIndex > endIndex) { showTrimStatusMessage('Start Index cannot be greater than End Index.', 'error'); return; } if (endIndex - startIndex < 1) { showTrimStatusMessage('Trimmed segment must have at least 2 points.', 'warning'); return; }
+            const originalIndex = segmentDetails[currentSegmentIndex]?.original_index ?? currentSegmentIndex; const payload = { segment_index: originalIndex, start_index: startIndex, end_index: endIndex };
+            acceptTrimButton.disabled = true; resetSegmentButton.disabled = true; showTrimStatusMessage('Applying trim and updating stats...', 'info');
+            try {
+                const response = await fetch('/trim', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); const result = await response.json();
+                if (response.ok) {
+                    const trimmedStats = result.trimmed_stats; const updatedOriginalIndex = result.original_segment_index; const frontendIndex = segmentDetails.findIndex(d => d.original_index === updatedOriginalIndex);
+                    if (frontendIndex === -1) { console.error("Could not find segment matching original index:", updatedOriginalIndex); showTrimStatusMessage('Internal state error.', 'error'); return; }
+                    segmentDetails[frontendIndex] = { ...segmentDetails[frontendIndex], ...trimmedStats };
+                    const row = document.getElementById(`segment-row-${frontendIndex}`); if (row) { row.querySelector('.data-dist').textContent = trimmedStats.distance.toFixed(2); row.querySelector('.data-dur').textContent = trimmedStats.duration; row.querySelector('.data-speed').textContent = trimmedStats.average_speed.toFixed(2); row.querySelector('.data-points').textContent = trimmedStats.point_count; }
+                    const newMaxIndex = trimmedStats.point_count - 1; trimMaxIndexSpan.textContent = newMaxIndex; trimStartIndexInput.value = 0; trimEndIndexInput.value = newMaxIndex; trimStartIndexInput.max = newMaxIndex; trimEndIndexInput.max = newMaxIndex;
+                    recalculateAndDisplayTotals();
+                    if (currentSegmentIndex === frontendIndex && segmentMaps[frontendIndex]) { loadMap(segmentMaps[frontendIndex]); }
+                    showTrimStatusMessage(`Segment ${frontendIndex + 1} updated successfully.`, 'success');
+                    resetMapHighlight();
+                } else { console.error("Accept Trim Error:", result.error); showTrimStatusMessage(`Error: ${result.error || 'Unknown trim error'}`, 'error'); }
+            } catch (error) { console.error("Accept Trim Fetch Error:", error); showTrimStatusMessage('Error communicating with server for trimming.', 'error'); }
+            finally { acceptTrimButton.disabled = false; resetSegmentButton.disabled = false; }
+        }
+
+        // --- Load Map ---
         function loadMap(mapFile) {
              if (!mapFile) { mapDiv.innerHTML = '<div class="map-placeholder error">Map file not available.</div>'; return; }
-             const timestamp = Date.now();
-             mapDiv.innerHTML = `<iframe src="/maps/${mapFile}?v=${timestamp}"
-                style="width:100%; height:100%; border:none; opacity: 0; transition: opacity 0.5s ease-in-out;"
-                onload="this.style.opacity = 1;"
-                onerror="mapDiv.innerHTML = '<div class=\\'map-placeholder error\\'>Error loading map. Check browser console for details.</div>';"
-            ></iframe>`;
+             const timestamp = Date.now(); // Cache busting parameter
+             const mapUrl = `/maps/${mapFile}?v=${timestamp}`; // Add timestamp to URL
+             console.log("Loading map:", mapUrl);
+             mapDiv.innerHTML = `<iframe id="map-iframe" src="${mapUrl}" style="width:100%; height:100%; border:none; opacity: 0; transition: opacity 0.5s ease-in-out;" onload="this.style.opacity = 1;" onerror="console.error('Error loading iframe map: ${mapUrl}'); mapDiv.innerHTML = '<div class=\\'map-placeholder error\\'>Error loading map ${mapFile}. Check console.</div>';"></iframe>`;
         }
 
-        function updateTableHighlight() {
-            document.querySelectorAll('#segment-table tbody tr').forEach(row => row.classList.remove('highlight'));
-            const rowId = currentSegmentIndex === -1 ? 'all-segments-row' : `segment-row-${currentSegmentIndex}`;
-            document.getElementById(rowId)?.classList.add('highlight');
-        }
+        // --- Utility & DOM ---
+        function updateTableHighlight() { document.querySelectorAll('#segment-table tbody tr').forEach(row => row.classList.remove('highlight')); const rowId = currentSegmentIndex === -1 ? 'all-segments-row' : `segment-row-${currentSegmentIndex}`; const highlightedRow = document.getElementById(rowId); if(highlightedRow && (currentSegmentIndex === -1 || !excludedSegmentIndices.has(currentSegmentIndex))) { highlightedRow.classList.add('highlight'); } }
+        function scrollToHighlightedRow() { const row = document.querySelector('#segment-table tbody tr.highlight'); if (row && segmentDataContainer.offsetParent !== null) { row.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } }
+        function showStatusMessage(message, type = 'info') { statusMessageDiv.textContent = message; statusMessageDiv.className = `status-message status-${type}`; statusMessageDiv.style.display = 'block'; }
+        function clearStatusMessage() { statusMessageDiv.textContent = ''; statusMessageDiv.style.display = 'none'; }
+        function showTrimStatusMessage(message, type = 'info') { trimStatusMessageDiv.textContent = message; trimStatusMessageDiv.className = `status-message status-${type}`; trimStatusMessageDiv.style.display = 'block'; }
+        function clearTrimStatusMessage() { trimStatusMessageDiv.textContent = ''; trimStatusMessageDiv.style.display = 'none'; }
 
-        function scrollToHighlightedRow() {
-            const row = document.querySelector('#segment-table tbody tr.highlight');
-            if (row && segmentDataContainer.offsetParent !== null) {
-                 row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
-        }
-
-        function showStatusMessage(message, type = 'info') {
-            statusMessageDiv.textContent = message;
-            statusMessageDiv.className = `status-message status-${type}`;
-            statusMessageDiv.style.display = 'block';
-        }
-
-        function clearStatusMessage() {
-            statusMessageDiv.textContent = '';
-            statusMessageDiv.style.display = 'none';
-        }
-
-        // No longer need DOMContentLoaded listener to hide results initially,
-        // resetUIBeforeProcessing handles it now.
+        // Initial setup on load
+        document.addEventListener('DOMContentLoaded', () => { updateTrimPanelVisibility(); });
 
     </script>
 

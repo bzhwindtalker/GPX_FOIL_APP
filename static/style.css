@@ -2,82 +2,14 @@
 body { font-family: Arial, sans-serif; margin: 0; background-color: #f8f9fa; color: #333; display: flex; justify-content: center; padding: 20px; box-sizing: border-box; min-height: 100vh; }
 .container { max-width: 1300px; width: 100%; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; min-height: 0; }
 
-/* === FINAL Header Layout CSS === */
-.header {
-    display: flex;
-    justify-content: space-between;
-    gap: 30px;
-    margin-bottom: 20px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #e0e0e0;
-    align-items: flex-start; /* Align tops of columns */
-    flex-wrap: wrap;
-}
-/* Left: File Input, Button, Status */
-.header-left {
-    flex: 1 1 300px; /* Give slightly more base width */
-    min-width: 280px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px; /* Adjust gap */
-}
+/* Header Layout */
+.header { display: flex; justify-content: space-between; gap: 30px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e0e0e0; align-items: flex-start; flex-wrap: wrap; }
+.header-left { flex: 1 1 300px; min-width: 280px; display: flex; flex-direction: column; gap: 12px; }
+.header-middle { flex: 1.5 1 400px; display: flex; flex-direction: column; align-items: center; gap: 15px; padding-top: 5px; text-align: center; }
+.header-right { flex: 1 1 300px; min-width: 280px; display: flex; flex-direction: column; justify-content: flex-start; padding-top: 5px; }
+
+/* File Input Section */
 .file-section { /* No change needed */ }
-#process-button { /* No structural change needed */ }
-.status-message { /* No structural change needed, but ensure margin works */ margin-top: 5px; }
-
-/* Middle: Title, Nav, Summary */
-.header-middle {
-    flex: 1.5 1 400px; /* Allow more space */
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Center title, nav, summary */
-    gap: 15px; /* Space between title, nav, summary */
-    padding-top: 5px;
-}
-.header-middle h1 { /* No change needed */ }
-.nav-buttons { /* No change needed */ }
-/* Summary styles within middle header */
-#results {
-    /* Moved here */
-    /* border: 1px solid #e0e0e0; Removed border */
-    border-radius: 6px;
-    padding: 10px 15px;
-    background-color: #f8f9fa; /* Light background for visual grouping */
-    visibility: hidden; /* Hide initially via JS */
-    width: 80%; /* Constrain width */
-    max-width: 350px; /* Max width */
-    text-align: center; /* Center text */
-    margin-top: 5px; /* Add small top margin */
-}
-#results h2 { font-size: 16px; margin-bottom: 8px; color: #444; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-#results p { margin: 4px 0; font-size: 14px; color: #555; }
-#results span { font-weight: 600; color: #333; margin-left: 5px; }
-
-/* Right: Thresholds Only */
-.header-right {
-    flex: 1 1 300px; /* Adjusted basis */
-    min-width: 280px;
-    display: flex; /* Use flex to align content */
-    flex-direction: column;
-    /* align-items: center; /* Center the threshold box */ /* Optional */
-    justify-content: flex-start; /* Align threshold box to top */
-    padding-top: 5px; /* Align top edge roughly */
-}
-.threshold-controls {
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    padding: 10px 15px 5px 15px;
-    background-color: #fdfdfd;
-    width: 100%; /* Take full width of parent column */
-    box-sizing: border-box;
-}
-.threshold-title { font-size: 14px; font-weight: 600; margin: 0 0 10px 0; color: #555; }
-.threshold-section { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-.threshold-section:last-child { margin-bottom: 5px; }
-.threshold-section label { font-size: 13px; color: #444; flex: 0 0 160px; text-align: right; cursor: help; }
-.threshold-section input[type="number"] { flex-grow: 1; padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; min-width: 65px; max-width: 80px; box-sizing: border-box; }
-
-/* File Input Section Feedback (remains same) */
 .file-selection-feedback { position: relative; margin-top: 5px; min-height: 30px; display: flex; align-items: center; }
 #selected-filename { display: inline-block; font-size: 13px; color: #555; padding: 6px 10px; background: #e9f5ff; border-radius: 4px; border: 1px solid #b3d7ff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: calc(100% - 35px); transition: padding-right 0.3s ease; font-style: italic; }
 #selected-filename:not(:empty) { font-style: normal; }
@@ -88,48 +20,96 @@ body { font-family: Arial, sans-serif; margin: 0; background-color: #f8f9fa; col
 .file-selected #selected-filename { padding-right: 30px; }
 .file-selected .checkmark-animation { animation: checkmarkBounce 0.5s ease-out forwards; }
 
-/* Button Styles (remains same) */
+/* Button Styles */
 button, .file-input-label { padding: 9px 18px; font-size: 14px; font-weight: 500; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease; background-color: #007bff; color: white; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 8px; line-height: 1.5; }
 .file-input-label { width: 100%; box-sizing: border-box; }
 #process-button { width: 100%; box-sizing: border-box; background-color: #28a745; }
 #process-button:hover:not(:disabled) { background-color: #218838; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
 button:hover:not(:disabled), .file-input-label:hover { background-color: #0056b3; transform: translateY(-1px); }
-button:disabled { background-color: #adb5bd !important; color: #6c757d !important; cursor: not-allowed; transform: none; box-shadow: none !important; }
-.nav-buttons button:hover:not(:disabled) { background-color: #5a6268; } /* Ensure nav button hover is distinct */
+button:disabled { background-color: #adb5bd !important; color: #6c757d !important; cursor: not-allowed; transform: none; box-shadow: none !important; opacity: 0.65; }
+.nav-buttons button:hover:not(:disabled) { background-color: #5a6268; }
 
-
-/* Process Button Animation (remains same) */
+/* Process Button Animation */
 #process-button { position: relative; overflow: hidden; }
 button.processing { pointer-events: none; background-color: #218838 !important; }
 button.processing .button-text, button.processing .button-icon { visibility: hidden; }
 button.processing .progress-bar { position: absolute; top: 0; left: 0; height: 100%; width: 0; background-color: rgba(255, 255, 255, 0.3); animation: progress 1.5s ease-in-out infinite; border-radius: 5px; }
 @keyframes progress { 0% { width: 0%; opacity: 0.5; } 50% { width: 70%; opacity: 0.8; } 100% { width: 100%; opacity: 0.5; } }
 
-/* Status Message Area Style (remains same) */
-.status-message { padding: 8px 12px; border-radius: 4px; font-size: 13px; display: none; border: 1px solid transparent; text-align: center; }
+/* Status Message Area Style */
+.status-message { padding: 8px 12px; border-radius: 4px; font-size: 13px; display: none; border: 1px solid transparent; text-align: center; margin-top: 5px; }
 .status-info { color: #004085; background-color: #cce5ff; border-color: #b8daff; }
 .status-success { color: #155724; background-color: #d4edda; border-color: #c3e6cb; }
 .status-warning { color: #856404; background-color: #fff3cd; border-color: #ffeeba; }
 .status-error { color: #721c24; background-color: #f8d7da; border-color: #f5c6cb; }
 
-/* Segment Data Table Section (remains same) */
+/* Threshold Controls */
+.threshold-controls { border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px 15px 5px 15px; background-color: #fdfdfd; width: 100%; box-sizing: border-box; }
+.threshold-title { font-size: 14px; font-weight: 600; margin: 0 0 10px 0; color: #555; }
+.threshold-section { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.threshold-section:last-child { margin-bottom: 5px; }
+.threshold-section label { font-size: 13px; color: #444; flex: 0 0 160px; text-align: right; cursor: help; }
+.threshold-section input[type="number"] { flex-grow: 1; padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; min-width: 65px; max-width: 80px; box-sizing: border-box; }
+
+
+/* Summary Section Styling */
+.summary-section-container { display: flex; gap: 20px; margin-top: 20px; margin-bottom: 20px; flex-wrap: wrap; visibility: hidden; }
+.summary-box { flex: 1 1 300px; min-width: 250px; padding: 15px 20px; border: 1px solid #e0e0e0; border-radius: 6px; background-color: #f8f9fa; box-sizing: border-box; }
+.summary-box h2 { font-size: 16px; margin-top: 0; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #eee; color: #444; }
+.summary-box h2 span { font-size: 13px; font-weight: normal; color: #6c757d; }
+.summary-box p { margin: 5px 0; font-size: 14px; color: #555; }
+.summary-box span { font-weight: 600; color: #333; margin-left: 5px; }
+
+/* Toggle Trim Panel Button */
+#toggle-trim-panel-button { width: 100%; box-sizing: border-box; margin-top: 10px; background-color: #6c757d; border: 1px solid #6c757d; }
+#toggle-trim-panel-button:hover:not(:disabled) { background-color: #5a6268; border-color: #545b62; }
+
+/* Trim Controls Panel */
+#trim-controls.control-panel { display: none; border: 1px solid #bdd7ff; background-color: #f0f5ff; margin: 15px 0; padding: 15px; border-radius: 6px; }
+#trim-controls.control-panel.visible { display: block; }
+#trim-controls h3 { margin-top: 0; margin-bottom: 10px; font-size: 16px; color: #444; border-bottom: 1px solid #eee; padding-bottom: 8px;}
+#trim-controls p { font-size: 13px; color: #555; margin-bottom: 10px; }
+.trim-inputs label { font-size: 13px; margin-right: 5px; font-weight: 500; color: #333; }
+.trim-inputs input[type="number"] { padding: 5px; width: 70px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px; }
+#trim-preview-button { background-color: #6c757d; color: white; padding: 6px 12px; font-size: 13px; }
+#trim-preview-button:hover:not(:disabled) { background-color: #5a6268; }
+#accept-trim-button { background-color: #28a745; color: white; padding: 6px 12px; font-size: 13px; }
+#accept-trim-button:hover:not(:disabled) { background-color: #218838; }
+#trim-status-message { margin-top: 10px; }
+
+/* Segment Data Table Section */
 #segment-data { height: 200px; overflow-y: auto; margin: 20px 0; border: 1px solid #dee2e6; border-radius: 6px; background-color: #fff; }
 #segment-data h2 { font-size: 18px; margin: 0; padding: 10px 15px; color: #444; background-color: #f8f9fa; border-bottom: 1px solid #dee2e6; position: sticky; top: 0; z-index: 2; }
+#segment-data h2 span { font-weight:normal; font-size: 13px; color: #6c757d;}
 #segment-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 0; }
-#segment-table th, #segment-table td { padding: 10px 12px; border-bottom: 1px solid #dee2e6; line-height: 1.4; text-align: left; }
-#segment-table td:nth-child(2), #segment-table td:nth-child(4) { text-align: right; }
-#segment-table th:nth-child(2), #segment-table th:nth-child(4) { text-align: right; }
+#segment-table th, #segment-table td { padding: 10px 8px; border-bottom: 1px solid #dee2e6; line-height: 1.4; text-align: left; vertical-align: middle; }
 #segment-table th { background-color: #f8f9fa; position: sticky; top: 46px; z-index: 1; font-weight: 600; border-top: none; border-bottom-width: 2px; }
-#segment-table td:first-child, #segment-table th:first-child { padding-left: 15px; }
-#segment-table td:last-child, #segment-table th:last-child { padding-right: 15px; }
-#segment-table tr.summary-row td { font-weight: bold; color: #333; background-color: #f8f9fa; }
+/* Column Specific Styles */
+#segment-table th.exclude-col, #segment-table td.exclude-col { width: 35px; text-align: center; padding-left: 10px; padding-right: 5px; }
+#segment-table td.exclude-col input[type="checkbox"] { cursor: pointer; vertical-align: middle; }
+#segment-table th:nth-child(3), #segment-table td:nth-child(3), #segment-table th:nth-child(5), #segment-table td:nth-child(5), #segment-table th:nth-child(6), #segment-table td:nth-child(6) { text-align: right; }
+#segment-table th:nth-child(2), #segment-table td:nth-child(2) { padding-left: 5px; }
+#segment-table th.export-col, #segment-table td.export-col { width: 50px; text-align: center; padding-right: 10px; }
+#segment-table th:last-child, #segment-table td:last-child { padding-right: 10px; }
+/* Row States */
 #segment-table tbody tr.clickable-row { cursor: pointer; transition: background-color 0.15s ease-in-out; }
-#segment-table tbody tr.clickable-row:hover { background-color: #f0f0f0; }
+#segment-table tbody tr.clickable-row:not(.excluded-row):hover { background-color: #f0f0f0; }
+#segment-table tr.summary-row { font-weight: bold; color: #333; background-color: #f8f9fa; }
+#segment-table tr.summary-row td { border-bottom-width: 2px; }
+#segment-table tr.summary-row td:last-child, #segment-table tr.summary-row td:nth-child(6) { color: #999; }
 .highlight { background-color: #d6eaff !important; font-weight: bold; }
-.highlight:hover { background-color: #cce0ff !important; }
+#segment-table tbody tr.clickable-row.highlight:not(.excluded-row):hover { background-color: #cce0ff !important; }
+#segment-table tbody tr.excluded-row { text-decoration: line-through; color: #999; background-color: #f8f8f8; opacity: 0.7; }
+#segment-table tbody tr.excluded-row.highlight { background-color: #f8f8f8 !important; }
+#segment-table tbody tr.excluded-row td:not(.exclude-col) { cursor: default; }
+#segment-table tbody tr.best-segment-row { background-color: #e7f7e1 !important; font-weight: 500; }
+#segment-table tbody tr.best-segment-row:hover { background-color: #d8f0d1 !important; }
+#segment-table tbody tr.best-segment-row.highlight { box-shadow: inset 0 0 0 2px #28a745; }
+button.export-button { background: none; border: none; color: #007bff; cursor: pointer; padding: 4px; font-size: 1.1em; line-height: 1; vertical-align: middle; }
+button.export-button:hover { color: #0056b3; }
 
-/* Map Container (remains same) */
-#map { flex-grow: 1; min-height: 450px; border-radius: 6px; border: 1px solid #dee2e6; margin-top: 0; overflow: hidden; position: relative; background-color: #e9ecef; }
+/* Map Container */
+#map { flex-grow: 1; min-height: 450px; border-radius: 6px; border: 1px solid #dee2e6; margin-top: 0; /* Removed margin-top: 20px */ overflow: hidden; position: relative; background-color: #e9ecef; }
 .map-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #6c757d; font-size: 16px; text-align: center; padding: 20px; max-width: 80%; }
 .map-placeholder.error { color: #dc3545; font-weight: bold; }
 #map iframe { display: block; width: 100%; height: 100%; border: none; }
@@ -138,23 +118,48 @@ button.processing .progress-bar { position: absolute; top: 0; left: 0; height: 1
 @media (max-width: 992px) {
     .header { flex-direction: column; align-items: stretch; gap: 20px; }
     .header-left, .header-middle, .header-right { flex-basis: auto; width: 100%; min-width: unset; }
-    /* Center middle column items when stacked */
     .header-middle { align-items: center; }
-    #results { width: 90%; max-width: 400px; /* Adjust width for stacked view */ }
-    .threshold-controls { /* No change needed, already takes full width */ }
-     .threshold-section { flex-wrap: wrap; }
-     .threshold-section label { flex-basis: 100%; text-align: left; margin-bottom: 3px; }
-     .threshold-section input[type="number"] { min-width: 80px; max-width: 100px; flex-basis: auto; flex-grow: 0; }
+    .summary-section-container { margin-top: 10px; margin-bottom: 15px; } /* Adjust spacing */
+    .threshold-section { flex-wrap: wrap; }
+    .threshold-section label { flex-basis: 100%; text-align: left; margin-bottom: 3px; }
+    .threshold-section input[type="number"] { min-width: 80px; max-width: 100px; flex-basis: auto; flex-grow: 0; }
     .nav-buttons { justify-content: space-around; }
 }
 @media (max-width: 768px) {
     body { padding: 10px; } .container { padding: 15px; }
     .header-middle h1 { font-size: 22px; }
     .nav-buttons button { flex-basis: auto; font-size: 13px; padding: 7px 10px; gap: 5px; }
+    .summary-box { flex-basis: 100%; } /* Stack summary boxes */
     #segment-data { height: 180px; } #map { min-height: 350px; }
-    #segment-table th, #segment-table td { padding: 8px 10px; font-size: 13px; }
+    #segment-table th, #segment-table td { padding: 8px 6px; font-size: 13px; }
     #segment-data h2 { font-size: 16px; padding: 8px 12px; }
     #segment-table th { top: 38px; }
-    #results { width: 100%; max-width: none; } /* Full width summary on small screens */
-
+    #segment-table th.export-col, #segment-table td.export-col { width: 40px; }
+    button.export-button { font-size: 1em; }
 }
+
+/* --- START: Added Footer Styles --- */
+footer {
+    margin-top: 30px;      /* Space between map/content and footer */
+    padding-top: 15px;      /* Space between border and footer text */
+    border-top: 1px solid #e0e0e0; /* Subtle separator line */
+    text-align: center;     /* Center the text */
+}
+
+footer p {
+    margin: 5px 0;          /* Adjust vertical spacing between lines */
+    font-size: 12px;        /* Slightly smaller font */
+    color: #6c757d;       /* Muted color, matches placeholders/secondary text */
+    line-height: 1.4;       /* Improve readability */
+}
+
+footer a {
+    color: #007bff;         /* Standard link blue for clarity */
+    text-decoration: none;  /* Remove underline by default */
+}
+
+footer a:hover {
+    color: #0056b3;         /* Darker blue on hover */
+    text-decoration: underline; /* Add underline on hover */
+}
+/* --- END: Added Footer Styles --- */

@@ -1,3 +1,5 @@
+/* --- START OF FILE style.css --- */
+
 /* Base Styles */
 body { font-family: Arial, sans-serif; margin: 0; background-color: #f8f9fa; color: #333; display: flex; justify-content: center; padding: 20px; box-sizing: border-box; min-height: 100vh; }
 .container { max-width: 1300px; width: 100%; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; min-height: 0; }
@@ -50,7 +52,8 @@ button.processing .progress-bar { position: absolute; top: 0; left: 0; height: 1
 .threshold-section:last-child { margin-bottom: 5px; }
 .threshold-section label { font-size: 13px; color: #444; flex: 0 0 160px; text-align: right; cursor: help; }
 .threshold-section input[type="number"] { flex-grow: 1; padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; min-width: 65px; max-width: 80px; box-sizing: border-box; }
-
+/* Make number inputs slightly wider to prevent text cutoff */
+.threshold-section input[type="number"] { min-width: 70px; max-width: 90px; }
 
 /* Summary Section Styling */
 .summary-section-container { display: flex; gap: 20px; margin-top: 20px; margin-bottom: 20px; flex-wrap: wrap; visibility: hidden; }
@@ -59,6 +62,7 @@ button.processing .progress-bar { position: absolute; top: 0; left: 0; height: 1
 .summary-box h2 span { font-size: 13px; font-weight: normal; color: #6c757d; }
 .summary-box p { margin: 5px 0; font-size: 14px; color: #555; }
 .summary-box span { font-weight: 600; color: #333; margin-left: 5px; }
+.best-segment-title { /* Optional: Add subtle distinction */ /* border-bottom-color: #c3e6cb; */ }
 
 /* Toggle Trim Panel Button */
 #toggle-trim-panel-button { width: 100%; box-sizing: border-box; margin-top: 10px; background-color: #6c757d; border: 1px solid #6c757d; }
@@ -69,16 +73,21 @@ button.processing .progress-bar { position: absolute; top: 0; left: 0; height: 1
 #trim-controls.control-panel.visible { display: block; }
 #trim-controls h3 { margin-top: 0; margin-bottom: 10px; font-size: 16px; color: #444; border-bottom: 1px solid #eee; padding-bottom: 8px;}
 #trim-controls p { font-size: 13px; color: #555; margin-bottom: 10px; }
-.trim-inputs label { font-size: 13px; margin-right: 5px; font-weight: 500; color: #333; }
+/* Adjust trim inputs layout */
+.trim-inputs { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+.trim-inputs div { display: flex; align-items: center; gap: 5px; } /* Group label and input */
+.trim-inputs label { font-size: 13px; font-weight: 500; color: #333; }
 .trim-inputs input[type="number"] { padding: 5px; width: 70px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px; }
-#trim-preview-button { background-color: #6c757d; color: white; padding: 6px 12px; font-size: 13px; }
-#trim-preview-button:hover:not(:disabled) { background-color: #5a6268; }
-#accept-trim-button { background-color: #28a745; color: white; padding: 6px 12px; font-size: 13px; }
+.trim-inputs button { padding: 6px 12px; font-size: 13px; } /* Consistent button size */
+#reset-segment-button { background-color: #ffc107; color: #333; }
+#reset-segment-button:hover:not(:disabled) { background-color: #e0a800; }
+#accept-trim-button { background-color: #28a745; color: white; }
 #accept-trim-button:hover:not(:disabled) { background-color: #218838; }
 #trim-status-message { margin-top: 10px; }
 
+
 /* Segment Data Table Section */
-#segment-data { height: 200px; overflow-y: auto; margin: 20px 0; border: 1px solid #dee2e6; border-radius: 6px; background-color: #fff; }
+#segment-data { height: 200px; overflow-y: auto; margin: 20px 0; border: 1px solid #dee2e6; border-radius: 6px; background-color: #fff; display: none; /* Hidden initially */ }
 #segment-data h2 { font-size: 18px; margin: 0; padding: 10px 15px; color: #444; background-color: #f8f9fa; border-bottom: 1px solid #dee2e6; position: sticky; top: 0; z-index: 2; }
 #segment-data h2 span { font-weight:normal; font-size: 13px; color: #6c757d;}
 #segment-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 0; }
@@ -87,29 +96,41 @@ button.processing .progress-bar { position: absolute; top: 0; left: 0; height: 1
 /* Column Specific Styles */
 #segment-table th.exclude-col, #segment-table td.exclude-col { width: 35px; text-align: center; padding-left: 10px; padding-right: 5px; }
 #segment-table td.exclude-col input[type="checkbox"] { cursor: pointer; vertical-align: middle; }
-#segment-table th:nth-child(3), #segment-table td:nth-child(3), #segment-table th:nth-child(5), #segment-table td:nth-child(5), #segment-table th:nth-child(6), #segment-table td:nth-child(6) { text-align: right; }
-#segment-table th:nth-child(2), #segment-table td:nth-child(2) { padding-left: 5px; }
+#segment-table th:nth-child(3), #segment-table td:nth-child(3), /* Distance */
+#segment-table th:nth-child(5), #segment-table td:nth-child(5), /* Avg Speed */
+#segment-table th:nth-child(6), #segment-table td:nth-child(6) { /* Points */
+    text-align: right;
+    padding-right: 15px; /* Add padding for right-aligned numbers */
+}
+#segment-table th:nth-child(2), #segment-table td:nth-child(2) { padding-left: 5px; } /* Segment # */
 #segment-table th.export-col, #segment-table td.export-col { width: 50px; text-align: center; padding-right: 10px; }
 #segment-table th:last-child, #segment-table td:last-child { padding-right: 10px; }
 /* Row States */
 #segment-table tbody tr.clickable-row { cursor: pointer; transition: background-color 0.15s ease-in-out; }
-#segment-table tbody tr.clickable-row:not(.excluded-row):hover { background-color: #f0f0f0; }
+#segment-table tbody tr.clickable-row:not(.excluded-row):not(.summary-row):hover { background-color: #f0f0f0; }
 #segment-table tr.summary-row { font-weight: bold; color: #333; background-color: #f8f9fa; }
-#segment-table tr.summary-row td { border-bottom-width: 2px; }
-#segment-table tr.summary-row td:last-child, #segment-table tr.summary-row td:nth-child(6) { color: #999; }
+#segment-table tr.summary-row:hover { background-color: #e9ecef !important; } /* Subtle hover for summary row */
+#segment-table tr.summary-row td { border-bottom-width: 2px; border-top: 1px solid #dee2e6; }
+#segment-table tr.summary-row td:last-child, /* Export column */
+#segment-table tr.summary-row td:first-child, /* Exclude column */
+#segment-table tr.summary-row td:nth-child(6) { /* Points column */
+    color: #999; /* Make irrelevant cells grayed out */
+    font-weight: normal;
+}
 .highlight { background-color: #d6eaff !important; font-weight: bold; }
-#segment-table tbody tr.clickable-row.highlight:not(.excluded-row):hover { background-color: #cce0ff !important; }
+#segment-table tbody tr.clickable-row.highlight:not(.excluded-row):not(.summary-row):hover { background-color: #cce0ff !important; }
 #segment-table tbody tr.excluded-row { text-decoration: line-through; color: #999; background-color: #f8f8f8; opacity: 0.7; }
-#segment-table tbody tr.excluded-row.highlight { background-color: #f8f8f8 !important; }
-#segment-table tbody tr.excluded-row td:not(.exclude-col) { cursor: default; }
+#segment-table tbody tr.excluded-row.highlight { background-color: #f8f8f8 !important; } /* Don't highlight excluded rows */
+#segment-table tbody tr.excluded-row td:not(.exclude-col) { cursor: default; } /* Make excluded data cells non-clickable */
+#segment-table tbody tr.excluded-row button.export-button { opacity: 0.5; cursor: not-allowed; pointer-events: none; } /* Disable export on excluded */
 #segment-table tbody tr.best-segment-row { background-color: #e7f7e1 !important; font-weight: 500; }
-#segment-table tbody tr.best-segment-row:hover { background-color: #d8f0d1 !important; }
+#segment-table tbody tr.best-segment-row:not(.excluded-row):hover { background-color: #d8f0d1 !important; }
 #segment-table tbody tr.best-segment-row.highlight { box-shadow: inset 0 0 0 2px #28a745; }
 button.export-button { background: none; border: none; color: #007bff; cursor: pointer; padding: 4px; font-size: 1.1em; line-height: 1; vertical-align: middle; }
 button.export-button:hover { color: #0056b3; }
 
 /* Map Container */
-#map { flex-grow: 1; min-height: 450px; border-radius: 6px; border: 1px solid #dee2e6; margin-top: 0; /* Removed margin-top: 20px */ overflow: hidden; position: relative; background-color: #e9ecef; }
+#map { flex-grow: 1; min-height: 450px; border-radius: 6px; border: 1px solid #dee2e6; margin-top: 20px; /* Re-added margin for spacing */ overflow: hidden; position: relative; background-color: #e9ecef; }
 .map-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #6c757d; font-size: 16px; text-align: center; padding: 20px; max-width: 80%; }
 .map-placeholder.error { color: #dc3545; font-weight: bold; }
 #map iframe { display: block; width: 100%; height: 100%; border: none; }
@@ -123,7 +144,7 @@ button.export-button:hover { color: #0056b3; }
     .threshold-section { flex-wrap: wrap; }
     .threshold-section label { flex-basis: 100%; text-align: left; margin-bottom: 3px; }
     .threshold-section input[type="number"] { min-width: 80px; max-width: 100px; flex-basis: auto; flex-grow: 0; }
-    .nav-buttons { justify-content: space-around; }
+    .nav-buttons { justify-content: space-around; width: 100%; }
 }
 @media (max-width: 768px) {
     body { padding: 10px; } .container { padding: 15px; }
@@ -133,9 +154,14 @@ button.export-button:hover { color: #0056b3; }
     #segment-data { height: 180px; } #map { min-height: 350px; }
     #segment-table th, #segment-table td { padding: 8px 6px; font-size: 13px; }
     #segment-data h2 { font-size: 16px; padding: 8px 12px; }
-    #segment-table th { top: 38px; }
+    #segment-table th { top: 38px; } /* Adjust sticky header position */
     #segment-table th.export-col, #segment-table td.export-col { width: 40px; }
     button.export-button { font-size: 1em; }
+    .trim-inputs { flex-direction: column; align-items: flex-start; gap: 10px; } /* Stack trim inputs */
+    .trim-inputs div { width: 100%; display: flex; justify-content: space-between; align-items: center;}
+    .trim-inputs label { margin-right: 0; }
+    .trim-inputs input[type="number"] { width: 80px; } /* Slightly wider input */
+    .trim-inputs button { width: auto; } /* Let buttons size naturally */
 }
 
 /* --- START: Added Footer Styles --- */
@@ -163,3 +189,4 @@ footer a:hover {
     text-decoration: underline; /* Add underline on hover */
 }
 /* --- END: Added Footer Styles --- */
+/* --- END OF FILE style.css --- */
